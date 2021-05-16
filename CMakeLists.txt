@@ -207,4 +207,6 @@ include_directories(
 # catkin_add_nosetests(test)
 
 add_executable(listener src/listener.cpp)
+add_executable(depth_imager src/depth_imager.cpp)
 target_link_libraries(listener ${catkin_LIBRARIES})
+target_link_libraries(depth_imager ${catkin_LIBRARIES})
