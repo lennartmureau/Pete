@@ -206,7 +206,11 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(listener src/listener.cpp)
-add_executable(depth_imager src/depth_imager.cpp)
-target_link_libraries(listener ${catkin_LIBRARIES})
-target_link_libraries(depth_imager ${catkin_LIBRARIES})
+add_executable(depth_imager8 src/depth_imager8.cpp)
+target_link_libraries(depth_imager8 ${catkin_LIBRARIES})
+
+add_executable(depth_imager16 src/depth_imager16.cpp)
+target_link_libraries(depth_imager16 ${catkin_LIBRARIES})
+
+add_executable(depth_viewer8 src/depth_viewer8.cpp)
+target_link_libraries(depth_viewer8 ${catkin_LIBRARIES})
