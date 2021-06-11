@@ -85,19 +85,19 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg) {
           outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3] = 255;
           outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 1] = 255 * (hue / 10923.0);
           outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 2] = 0;
-        } else if (10923 <= hue && hue < 21846) {
+        } else if (/*10923 <= hue && */hue < 21846) {
           outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3] = 255 * (2 - (hue / 10923.0));
           outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 1] = 255;
           outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 2] = 0;
-        } else if (21846 <= hue && hue < 32769) {
+        } else if (/*21846 <= hue && */hue < 32769) {
           outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3] = 0;
           outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 1] = 255;
           outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 2] = 255 * ((hue / 10923.0) - 2);
-        } else if (32769 <= hue && hue < 43692) {
+        } else if (/*32769 <= hue && */hue < 43692) {
           outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3] = 0;
           outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 1] = 255 * (4 - (hue / 10923.0));
           outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 2] = 255;
-        } else if (43692 <= hue && hue < 54615) {
+        } else if (/*43692 <= hue && */hue < 54615) {
           outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3] = 255 * ((hue / 10923.0) - 4);
           outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 1] = 0;
           outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 2] = 255;
@@ -128,23 +128,27 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg) {
       }
       //Give the pixel the correct color
       hue = top / bottom;
-      if (hue < 10923) {
+      if (hue == 0) {
+        outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3] = 0;
+        outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 1] = 0;
+        outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 2] = 0;
+      } else if (hue < 10923) {
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3] = 255;
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 1] = 255 * (hue / 10923.0);
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 2] = 0;
-      } else if (10923 <= hue && hue < 21846) {
+      } else if (/*10923 <= hue && */hue < 21846) {
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3] = 255 * (2 - (hue / 10923.0));
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 1] = 255;
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 2] = 0;
-      } else if (21846 <= hue && hue < 32769) {
+      } else if (/*21846 <= hue && */hue < 32769) {
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3] = 0;
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 1] = 255;
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 2] = 255 * ((hue / 10923.0) - 2);
-      } else if (32769 <= hue && hue < 43692) {
+      } else if (/*32769 <= hue && */hue < 43692) {
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3] = 0;
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 1] = 255 * (4 - (hue / 10923.0));
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 2] = 255;
-      } else if (43692 <= hue && hue < 54615) {
+      } else if (/*43692 <= hue && */hue < 54615) {
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3] = 255 * ((hue / 10923.0) - 4);
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 1] = 0;
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 2] = 255;
