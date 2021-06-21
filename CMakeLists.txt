@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  message_filters
+  darknet_ros_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -214,3 +216,9 @@ target_link_libraries(depth_imager16 ${catkin_LIBRARIES})
 
 add_executable(depth_viewer8 src/depth_viewer8.cpp)
 target_link_libraries(depth_viewer8 ${catkin_LIBRARIES})
+
+add_executable(object_3D_positioner8 src/object_3D_positioner8.cpp)
+target_link_libraries(object_3D_positioner8 ${catkin_LIBRARIES})
+
+add_executable(object_3D_positioner16 src/object_3D_positioner16.cpp)
+target_link_libraries(object_3D_positioner16 ${catkin_LIBRARIES})
