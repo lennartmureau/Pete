@@ -22,7 +22,7 @@
 
 void callback(const sensor_msgs::ImageConstPtr& image, const darknet_ros_msgs::BoundingBoxesConstPtr& boundingBoxes) {
 
-  for (int i; i < sizeof(*image); i++) {
+  for (uint8_t i = 0; i < boundingBoxes->num; i++) {
 
     double probability = boundingBoxes->bounding_boxes[i].probability;
     int64_t xmin = boundingBoxes->bounding_boxes[i].xmin;
