@@ -23,8 +23,8 @@
 //The multiplier for the distance value (max distance = 255 / MULTIPLIER)
 #define MULTIPLIER 50
 
-int16_t xmiddles[9] = {10, 10, 10, 192, 192, 192, 374, 374, 374};
-int16_t ymiddles[9] = {10, 108, 206, 10, 108, 206, 10, 108, 206};
+int16_t xmiddles[9] = {30, 30, 30, 192, 192, 192, 354, 354, 354};
+int16_t ymiddles[9] = {30, 108, 186, 60, 108, 156, 30, 108, 186};
 uint8_t num = 9;
 
 void callback(const sensor_msgs::ImageConstPtr& image) {
