@@ -23,11 +23,17 @@
 //The multiplier for the distance value (max distance = 255 / MULTIPLIER)
 #define MULTIPLIER 50
 
+int16_t xmiddles[9] = {10, 10, 10, 192, 192, 192, 374, 374, 374};
+int16_t ymiddles[9] = {10, 108, 206, 10, 108, 206, 10, 108, 206};
+uint8_t num = 9;
+
 void callback(const sensor_msgs::ImageConstPtr& image) {
 
   static tf2_ros::TransformBroadcaster br;
   
-  //for (int i; i < sizeof(*image); i++) {
+  for (uint8_t i = 0; i < num; i++) {
+    
+    std::cout << std::to_string(i) << std::endl;
 
     //double probability = boundingBoxes->bounding_boxes[i].probability;
     //int64_t xmin = boundingBoxes->bounding_boxes[i].xmin;
@@ -37,11 +43,31 @@ void callback(const sensor_msgs::ImageConstPtr& image) {
     //int16_t id = boundingBoxes->bounding_boxes[i].id;
     //std::string Class = boundingBoxes->bounding_boxes[i].Class;
   
-    int16_t xmiddle = 150;
-    int16_t ymiddle = HALF_HEIGHT;
+    int16_t xmiddle = xmiddles[i];
+    int16_t ymiddle = ymiddles[i];
   
-    uint8_t depth = (image->data[xmiddle + ymiddle * IMAGE_WIDTH]) / MULTIPLIER;
+    uint8_t rawDepth = (image->data[xmiddle + ymiddle * IMAGE_WIDTH]);
+    
+    if (rawDepth == 0) {
+      std::cout << "Invalid" << std::endl;
+      continue;
+    }
+    
+    std::string name = "Object" + std::to_string(i);
+    
+    float depth = rawDepth / (float)MULTIPLIER;
   
+    float x = sqrt((depth*depth) / (1 +
+                                    (1 / HORIZONTAL_N_SQUARE) +
+                                    ((xmiddle / (HORIZONTAL_N_SQUARE * HALF_WIDTH)) * (-2 + xmiddle / ((float)HALF_WIDTH))) +
+                                    (1 / VERTICAL_N_SQUARE) +
+                                    ((ymiddle / (VERTICAL_N_SQUARE * HALF_HEIGHT)) * (-2 + ymiddle / ((float)HALF_HEIGHT)))
+                                    ));
+    
+    float y = ((1 - (xmiddle) / ((float)HALF_WIDTH)) /  ((HORIZONTAL_N) / x));
+    
+    float z = ((1 - (ymiddle) / ((float)HALF_HEIGHT)) /  ((VERTICAL_N) / x));
+    /*
     float x = std::sqrt(
                          (
                            std::pow(depth, 2)
@@ -79,8 +105,9 @@ void callback(const sensor_msgs::ImageConstPtr& image) {
                 /
                 ( ((float) VERTICAL_N) / x )
               );
-  
-    //std::cout << "object id: " << id << std::endl;
+    */
+    ROS_INFO("object id: %d", i);
+    //std::cout << "object id: " << i << std::endl;
     //std::cout << "object class: " << Class << std::endl;  
     //std::cout << "probability: " << probability << std::endl;
     std::cout << "image 2D coordinates: (x = " << xmiddle << ", y = " << ymiddle << ")" << std::endl;
@@ -92,7 +119,7 @@ void callback(const sensor_msgs::ImageConstPtr& image) {
   
     transformStamped.header.stamp = ros::Time::now();
     transformStamped.header.frame_id = "velodyne";
-    transformStamped.child_frame_id = "object";
+    transformStamped.child_frame_id = name;
     transformStamped.transform.translation.x = x;
     transformStamped.transform.translation.y = y;
     transformStamped.transform.translation.z = z;
@@ -103,7 +130,7 @@ void callback(const sensor_msgs::ImageConstPtr& image) {
 
     br.sendTransform(transformStamped);
 
-  //}
+  }
 }
 
 int main(int argc, char **argv) {

@@ -35,45 +35,18 @@ void callback(const sensor_msgs::ImageConstPtr& image, const darknet_ros_msgs::B
     int16_t xmiddle = (xmin + xmax) / 2;
     int16_t ymiddle = (ymin + ymax) / 2;
   
-    float depth = (image->data[xmiddle + ymiddle * IMAGE_WIDTH]) / MULTIPLIER;
+    float depth = (image->data[xmiddle + ymiddle * IMAGE_WIDTH]) / (float)MULTIPLIER;
   
-    float x = std::sqrt(
-                         (
-                           std::pow(depth, 2)
-                         )
-                         /
-                         (
-                           1 
-                           +
-                           ( 1 / ((float) HORIZONTAL_N_SQUARE) )
-                           +
-                           (
-                             (  ((float) xmiddle)  /  ( ((float) HORIZONTAL_N_SQUARE) * ((float) HALF_WIDTH) )  )
-                             *
-                             ( -2 + ((float) xmiddle) / ((float) HALF_WIDTH) )
-                           )
-                           +
-                           ( 1 / ((float) VERTICAL_N_SQUARE) )
-                           +
-                           (
-                             (  ((float) ymiddle)  /  ( ((float) VERTICAL_N_SQUARE) * ((float) HALF_HEIGHT) )  ) 
-                             * 
-                             ( -2 + ((float) ymiddle) / ((float) HALF_HEIGHT) )
-                           )
-                         )
-                       );
+    float x = sqrt((depth*depth) / (1 +
+                                    (1 / HORIZONTAL_N_SQUARE) +
+                                    ((xmiddle / (HORIZONTAL_N_SQUARE * HALF_WIDTH)) * (-2 + xmiddle / ((float)HALF_WIDTH))) +
+                                    (1 / VERTICAL_N_SQUARE) +
+                                    ((ymiddle / (VERTICAL_N_SQUARE * HALF_HEIGHT)) * (-2 + ymiddle / ((float)HALF_HEIGHT)))
+                                    ));
     
-    float y = (
-                ( 1 - ((float) xmiddle) / ((float) HALF_WIDTH) )
-                / 
-                ( ((float) HORIZONTAL_N) / x )
-              );
-
-    float z = (
-                ( 1 - ((float) xmiddle) / ((float) HALF_WIDTH) )
-                /
-                ( ((float) VERTICAL_N) / x )
-              );
+    float y = ((1 - (xmiddle) / ((float)HALF_WIDTH)) /  ((HORIZONTAL_N) / x));
+    
+    float z = ((1 - (ymiddle) / ((float)HALF_HEIGHT)) /  ((VERTICAL_N) / x));
   
     std::cout << "object id: " << id << std::endl;
     std::cout << "object class: " << Class << std::endl;  
