@@ -13,6 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_filters
+  tf2
+  tf2_ros
   darknet_ros_msgs
 )
 
@@ -222,3 +224,6 @@ target_link_libraries(object_3D_positioner8 ${catkin_LIBRARIES})
 
 add_executable(object_3D_positioner16 src/object_3D_positioner16.cpp)
 target_link_libraries(object_3D_positioner16 ${catkin_LIBRARIES})
+
+add_executable(tester src/tester.cpp)
+target_link_libraries(tester ${catkin_LIBRARIES})

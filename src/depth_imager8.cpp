@@ -15,6 +15,8 @@
 #define MULTIPLIER 50
 //The size off the kernel for the final processing (in one direction)
 #define KERNEL_N 7
+//The frame from which the image is published
+#define PUBLISHING_FRAME "depth_frame"
 
 ros::Publisher pub;
 
@@ -75,10 +77,12 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg) {
   //Create the output image array
   uint8_t outputImage[IMAGE_WIDTH * IMAGE_HEIGHT];
   
+  //This algorithm uses inverse distance weighting for the final image
+  /*
   //Loop through all the pixels off the output image
   for (uint16_t pixelX = 0; pixelX < IMAGE_WIDTH; pixelX++) {
     for (uint16_t pixelY = 0; pixelY < IMAGE_HEIGHT; pixelY++) {
-      //
+      //If the image is already colored, just copy it over
       if (pointImage[pixelX + pixelY * IMAGE_WIDTH] != 0 ) {
         outputImage[pixelX + pixelY * IMAGE_WIDTH] = pointImage[pixelX + pixelY * IMAGE_WIDTH];
         continue;
@@ -105,11 +109,43 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg) {
       outputImage[pixelX + pixelY * IMAGE_WIDTH] = top / bottom;
     }
   }
+  */
+  
+  //This algorithm uses nearest neighbour for the final image
+  
+  //Loop through all the pixels off the output image
+  for (uint16_t pixelX = 0; pixelX < IMAGE_WIDTH; pixelX++) {
+    for (uint16_t pixelY = 0; pixelY < IMAGE_HEIGHT; pixelY++) {
+      //If the image is already colored, just copy it over
+      if (pointImage[pixelX + pixelY * IMAGE_WIDTH] != 0 ) {
+        outputImage[pixelX + pixelY * IMAGE_WIDTH] = pointImage[pixelX + pixelY * IMAGE_WIDTH];
+        continue;
+      }
+      //
+      uint16_t minDistance = KERNEL_N * KERNEL_N;
+      uint8_t color = 0;
+      for (int8_t offX = -KERNEL_N; offX <= KERNEL_N; offX++) {
+        for (int8_t offY = -KERNEL_N; offY <= KERNEL_N; offY++) {
+          //If the pixel is offscreen, don't bother
+          if (pixelX + offX >= IMAGE_WIDTH || pixelX + offX < 0 || pixelY + offY >= IMAGE_HEIGHT || pixelY + offY < 0) {
+            continue;
+          }
+          if (pointImage[pixelX + offX + (pixelY + offY) * IMAGE_WIDTH] != 0 && (offX * offX + offY * offY) < minDistance) {
+            minDistance = (offX * offX + offY * offY);
+            color = pointImage[pixelX + offX + (pixelY + offY) * IMAGE_WIDTH];
+          }
+        }
+      }
+      //Give the pixel the correct color
+      outputImage[pixelX + pixelY * IMAGE_WIDTH] = color;
+    }
+  }
   
   //Construct and publish the image
   sensor_msgs::Image outMsg;
-  //TODO: Create a custom header
-  outMsg.header = std_msgs::Header();
+  //TODO: Add the sequence to the header
+  outMsg.header.stamp = ros::Time::now();
+  outMsg.header.frame_id = PUBLISHING_FRAME;
   outMsg.height = (IMAGE_HEIGHT);
   outMsg.width = (IMAGE_WIDTH);
   outMsg.encoding = "mono8";

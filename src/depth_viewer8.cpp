@@ -15,6 +15,8 @@
 #define MULTIPLIER 10000
 //The size off the kernel for the final processing (in one direction)
 #define KERNEL_N 7
+//The frame from which the image is published
+#define PUBLISHING_FRAME "depth_frame"
 
 ros::Publisher pub;
 
@@ -108,6 +110,8 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg) {
         }
         continue;
       }
+      //Use inverse distance weighting
+      /*
       //Create the top and bottom half of the division for inverse distance weighting
       float top = 0.0;
       float bottom = 0.0;
@@ -128,6 +132,24 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg) {
       }
       //Give the pixel the correct color
       hue = top / bottom;
+      */
+      
+      //Use nearest neigbour approach
+      uint16_t minDistance = KERNEL_N * KERNEL_N;
+      hue = 0;
+      for (int8_t offX = -KERNEL_N; offX <= KERNEL_N; offX++) {
+        for (int8_t offY = -KERNEL_N; offY <= KERNEL_N; offY++) {
+          //If the pixel is offscreen, don't bother
+          if (pixelX + offX >= IMAGE_WIDTH || pixelX + offX < 0 || pixelY + offY >= IMAGE_HEIGHT || pixelY + offY < 0) {
+            continue;
+          }
+          if (pointImage[pixelX + offX + (pixelY + offY) * IMAGE_WIDTH] != 0 && (offX * offX + offY * offY) < minDistance) {
+            minDistance = (offX * offX + offY * offY);
+            hue = pointImage[pixelX + offX + (pixelY + offY) * IMAGE_WIDTH];
+          }
+        }
+      }
+      
       if (hue == 0) {
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3] = 0;
         outputImage[(pixelX + pixelY * IMAGE_WIDTH) * 3 + 1] = 0;
@@ -162,8 +184,9 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg) {
   
   //Construct and publish the image
   sensor_msgs::Image outMsg;
-  //TODO: Create a custom header
-  outMsg.header = std_msgs::Header();
+  //TODO: Add the sequence to the header
+  outMsg.header.stamp = ros::Time::now();
+  outMsg.header.frame_id = PUBLISHING_FRAME;
   outMsg.height = (IMAGE_HEIGHT);
   outMsg.width = (IMAGE_WIDTH);
   outMsg.encoding = "rgb8";
