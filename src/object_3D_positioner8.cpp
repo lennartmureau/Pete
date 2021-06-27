@@ -35,7 +35,7 @@ void callback(const sensor_msgs::ImageConstPtr& image, const darknet_ros_msgs::B
     int16_t xmiddle = (xmin + xmax) / 2;
     int16_t ymiddle = (ymin + ymax) / 2;
   
-    uint8_t depth = (image->data[xmiddle + ymiddle * IMAGE_WIDTH]) / MULTIPLIER;
+    float depth = (image->data[xmiddle + ymiddle * IMAGE_WIDTH]) / MULTIPLIER;
   
     float x = std::sqrt(
                          (
