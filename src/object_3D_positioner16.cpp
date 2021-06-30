@@ -4,6 +4,9 @@
 #include "message_filters/sync_policies/approximate_time.h"
 #include "sensor_msgs/Image.h"
 #include "darknet_ros_msgs/BoundingBoxes.h"
+#include "geometry_msgs/TransformStamped.h"
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/transform_broadcaster.h>
 #include "iostream"
 #include "string"
 
@@ -22,7 +25,9 @@
 
 void callback(const sensor_msgs::ImageConstPtr& image, const darknet_ros_msgs::BoundingBoxesConstPtr& boundingBoxes) {
 
-  for (uint8_t i = 0; i < boundingBoxes->num; i++) {
+	static tf2_ros::TransformBroadcaster br;
+
+  for (uint8_t i = 0; i < boundingBoxes->count; i++) {
 
     double probability = boundingBoxes->bounding_boxes[i].probability;
     int64_t xmin = boundingBoxes->bounding_boxes[i].xmin;
@@ -32,17 +37,24 @@ void callback(const sensor_msgs::ImageConstPtr& image, const darknet_ros_msgs::B
     int16_t id = boundingBoxes->bounding_boxes[i].id;
     std::string Class = boundingBoxes->bounding_boxes[i].Class;
   
-    int16_t xmiddle = (xmin + xmax) / 2;
-    int16_t ymiddle = (ymin + ymax) / 2;
+    int16_t xmiddle = (xmin + xmax) / 2 * 3 / 5;
+    int16_t ymiddle = (ymin + ymax) / 2 * 3 / 5;
     
-    /*
+    
     uint8_t depth_bits01to08 = (image->data[(xmiddle + ymiddle * IMAGE_WIDTH) * 2]);
     uint8_t depth_bits09to16 = (image->data[(xmiddle + ymiddle * IMAGE_WIDTH) * 2 + 1]);
-    uint16_t rawDepth = (depth_bits09to16 << 8) || depth_bits01to08;
-    float depth = rawDepth / MULTIPLIER;
-    */
+    uint16_t rawDepth = (depth_bits09to16 << 8) | depth_bits01to08;
+    float depth = rawDepth / (float)MULTIPLIER;
     
-    float depth = *((uint16_t *) &(image->data[(xmiddle + ymiddle * IMAGE_WIDTH) * 2])) / (float)MULTIPLIER;
+    
+    //float depth = *((uint16_t *) &(image->data[(xmiddle + ymiddle * IMAGE_WIDTH) * 2])) / (float)MULTIPLIER;
+		
+		if (depth == 0) {
+      std::cout << "Invalid" << std::endl;
+      continue;
+    }
+
+		std::string name = Class + std::to_string(i);
 
     float x = sqrt((depth*depth) / (1 +
                                     (1 / HORIZONTAL_N_SQUARE) +
@@ -62,7 +74,21 @@ void callback(const sensor_msgs::ImageConstPtr& image, const darknet_ros_msgs::B
     std::cout << "depth: " << depth << std::endl;
     std::cout << "3D coordinates: (x = " << x << ", y = " << y << ", z = " << z << ")" << std::endl;
     std::cout << std::endl;
+		
+		geometry_msgs::TransformStamped transformStamped;
+  
+    transformStamped.header.stamp = ros::Time::now();
+    transformStamped.header.frame_id = "velodyne";
+    transformStamped.child_frame_id = name;
+    transformStamped.transform.translation.x = x;
+    transformStamped.transform.translation.y = y;
+    transformStamped.transform.translation.z = z;
+    transformStamped.transform.rotation.x = 0;
+    transformStamped.transform.rotation.y = 0;
+    transformStamped.transform.rotation.z = 0;
+    transformStamped.transform.rotation.w = 1;
 
+    br.sendTransform(transformStamped);
   }
 
 }
@@ -79,6 +105,8 @@ int main(int argc, char **argv) {
 
   message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(4), image_sub, boundingBoxes_sub);
   sync.registerCallback(boost::bind(&callback, _1, _2));
+
+	ROS_INFO("Started");
 
   ros::spin();
 

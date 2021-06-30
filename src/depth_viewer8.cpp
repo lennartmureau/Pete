@@ -208,6 +208,8 @@ int main(int argc, char **argv) {
 
   ros::Subscriber sub = nh.subscribe<sensor_msgs::PointCloud2> ("velodyne_points", 1, callback);
 
+  ROS_INFO("Started");
+
   ros::spin();
 
   return 0;

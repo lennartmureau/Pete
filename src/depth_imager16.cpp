@@ -12,7 +12,7 @@
 #define HORIZONTAL_N 1.376
 #define VERTICAL_N 2.475
 //The multiplier for the distance value (max distance = 65535 / MULTIPLIER)
-#define MULTIPLIER 10000
+#define MULTIPLIER 600
 //The size off the kernel for the final processing (in one direction)
 #define KERNEL_N 7
 //The frame from which the image is published
@@ -171,6 +171,8 @@ int main(int argc, char **argv) {
   pub = nh.advertise<sensor_msgs::Image>("depth_image16", 10);
 
   ros::Subscriber sub = nh.subscribe<sensor_msgs::PointCloud2> ("velodyne_points", 1, callback);
+
+  ROS_INFO("Started");
 
   ros::spin();
 
